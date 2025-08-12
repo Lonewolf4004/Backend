@@ -3,10 +3,14 @@ const mysql = require('mysql2');
 const express = require("express");
 const app = express();
 const path = require("path");
+const methodOverride = require("method-override");
 const port = 8080;
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "/views"));
+
+app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride("_method"));
 
 const connection = mysql.createConnection({
     host : 'localhost',
@@ -39,8 +43,57 @@ app.get('/', (req, res)=>{
 });
 
 // Show route
-app.get('/user', (req, res) => {
-    res.send("success ");
+app.get('/users', (req, res) => {
+    let q = `SELECT * FROM user`;
+     connection.query(q, (err, users) => {
+        if(err) {
+            console.log(err);
+            res.send("Some error in database");
+            return;
+        }
+        res.render("showUsers.ejs", { users });
+    });
+});
+
+// Edit route
+app.get('/users/:id/edit', (req, res) => {
+    let { id } = req.params;
+    let q = `SELECT * FROM user WHERE id = '${id}'`;
+      connection.query(q, (err, result) => {
+        if(err) {
+            console.log(err);
+            res.send("Some error in database");
+            return;
+        }
+        let user = result[0];
+        console.log(result);
+        res.render("edit.ejs", { user });
+    });
+});
+
+// Update(db) route
+app.patch("/users/:id", (req, res) => {
+    let { id } = req.params;
+    let { password : formPass, username : newusername} = req.body;
+    let q = `SELECT * FROM user WHERE id = '${id}'`;
+    connection.query(q, (err, result) => {
+        if(err) {
+            console.log(err);
+            res.send("Some error in database");
+            return;
+        }
+        console.log(q);
+        let user = result[0];
+        if(formPass != user.password){
+            res.send("Wrong password");
+        } else{
+            let q2 = `update user set username = '${newusername}' where id = '${id}'`;
+            connection.query(q2, (err, result)=>{
+                if(err) throw err;
+                res.redirect('/users');
+            });
+        }
+    });
 });
 
 app.listen(port, () => {
