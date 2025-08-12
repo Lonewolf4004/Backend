@@ -1,5 +1,9 @@
 --  /c/'Program Files'/MySQL/'MySQL Server 8.0'/bin/mysql.exe -u root -p
 
+create database if not exists delta_app;
+
+use delta_app;
+
 CREATE TABLE user(
     id VARCHAR(50) PRIMARY KEY,
     username VARCHAR(50) unique,
