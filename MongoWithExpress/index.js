@@ -10,6 +10,7 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
 app.use(express.static(path.join(__dirname, "public")));
+app.use(express.urlencoded({extended : true}));
 
 main()
 .then(() => {
@@ -30,6 +31,46 @@ app.get("/chats", async (req, res) => {
     let chats = await Chat.find();
     console.log(chats);
     res.render("index.ejs", {chats});
+});
+
+//New route
+app.get("/chats/new", (req, res)=> {
+    res.render("new.ejs");
+});
+
+//Create route
+app.post("/chats", (req, res)=> {
+    let {from, to, message} = req.body;
+    let newChat = new Chat({
+        from : from,
+        to : to,
+        message : message,
+        created_at : new Date(),
+    });
+    newChat.save()
+    .then((res)=>{
+        console.log("Chat was saved!");
+    })
+    .catch((err)=>{
+        console.log(err);
+    });
+    res.redirect("/chats");
+});
+
+// Edit route
+app.get("/chats/:id/edit", async (req, res) => {
+    let { id } = req.params;
+    let chat =  await Chat.findById(id);
+    res.render("edit.ejs", {chat});
+});
+
+//Update route
+app.put("/chats/:id", async (req, res)=>{
+    let {id} = req.params;
+    let { newMessage } = req.body;
+    let updatedChat =  await Chat.findByIdAndUpdate(id, {message : newMessage}, {runValidators : true, new : true});
+
+    console.log(updatedChat);
 });
 
 
