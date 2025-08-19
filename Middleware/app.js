@@ -23,7 +23,7 @@ const checkToken = (req, res, next)=>{
     if( token === "giveaccess"){
         return next();
     } 
-    throw new Error("Access denied!");
+    throw new ExpressError(401, "Access denied!");
 };
 
 
@@ -43,6 +43,10 @@ app.get("/random", (req, res)=>{
     res.send("This is a random page");
 });
 
+app.get("/admin", (req, res)=>{
+    throw new ExpressError(403, "Access to admin is forbidden");
+});
+
 
 // app.use((req, res, next) =>{
 //     req.time= new Date(Date.now()).toString();
@@ -52,12 +56,8 @@ app.get("/random", (req, res)=>{
 
 
 app.use((err, req, res, next)=>{
-    console.log("------------------ERROR------------------");
-    next(err);
-});
-app.use((err, req, res, next)=>{
-    console.log("------------------ERROR2 middleware------------------");
-    next(err);
+   let{ status = 500, message = "Some error occurred" } = err;
+    res.status(status).send(message);
 });
 
 // app.use((req, res) =>{
