@@ -17,7 +17,22 @@ app.use("/random", (req, res, next)=>{
     next();
 });
 
+const checkToken = (req, res, next)=>{
+    let { token } = req.query;
+    if( token === "giveaccess"){
+        return next();
+    } 
+    throw new Error("Access denied!");
+};
 
+
+app.get("/err", (req, res)=>{
+    abcd= abcd;
+});
+
+app.get("/api", checkToken, (req, res)=>{
+    res.send("data");
+});
 
 app.get("/", (req, res)=>{
     res.send("Hi, i am root.");
@@ -28,15 +43,25 @@ app.get("/random", (req, res)=>{
 });
 
 
-app.use((req, res, next) =>{
-    req.time= new Date(Date.now()).toString();
-    console.log(req.method, req.hostname, req.path, req.time);
-    next();
+// app.use((req, res, next) =>{
+//     req.time= new Date(Date.now()).toString();
+//     console.log(req.method, req.hostname, req.path, req.time);
+//     next();
+// });
+
+
+app.use((err, req, res, next)=>{
+    console.log("------------------ERROR------------------");
+    next(err);
+});
+app.use((err, req, res, next)=>{
+    console.log("------------------ERROR2 middleware------------------");
+    next(err);
 });
 
-app.use((req, res, next) =>{
-    res.send("Page not found");
-});
+// app.use((req, res) =>{
+//     res.send("Page not found");
+// });
 
 app.listen(port, ()=>{
     console.log(`App is listening on port : ${port}`);
